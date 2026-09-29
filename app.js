@@ -101,6 +101,25 @@ function renderResults() {
   resultsEl.appendChild(totalRow);
 }
 
+function formatAmount(val) {
+  const num = Number(val) || 0;
+  return num.toLocaleString("en-US", {
+    minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function generateSummary(people, shares, date = new Date()) {
+  const dateStr = date instanceof Date ? date.toISOString().slice(0, 10) : String(date);
+  const lines = [`fair-split — ${dateStr}`];
+  people.forEach((p, i) => {
+    lines.push(`${p.name || "(unnamed)"}: ${formatAmount(shares[i])}`);
+  });
+  const total = shares.reduce((a, b) => a + b, 0);
+  lines.push(`Total: ${formatAmount(total)}`);
+  return lines.join("\n");
+}
+
 document.getElementById("add-person").addEventListener("click", () => {
   state.people.push({ name: `Person ${state.people.length + 1}`, items: [{ label: "", amount: 0 }] });
   render();
@@ -109,4 +128,45 @@ document.getElementById("add-person").addEventListener("click", () => {
 document.getElementById("tax").addEventListener("input", (e) => { state.tax = e.target.value; renderResults(); });
 document.getElementById("tip").addEventListener("input", (e) => { state.tip = e.target.value; renderResults(); });
 
+const copySummaryBtn = document.getElementById("copy-summary");
+let copyTimeout;
+
+if (copySummaryBtn) {
+  copySummaryBtn.addEventListener("click", async () => {
+    const shares = computeShares();
+    const summary = generateSummary(state.people, shares);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(summary);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = summary;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      clearTimeout(copyTimeout);
+      copySummaryBtn.textContent = "Copied!";
+      copySummaryBtn.classList.add("copied");
+      copyTimeout = setTimeout(() => {
+        copySummaryBtn.textContent = "Copy summary for group chat";
+        copySummaryBtn.classList.remove("copied");
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy summary:", err);
+      copySummaryBtn.textContent = "Failed to copy";
+      setTimeout(() => {
+        copySummaryBtn.textContent = "Copy summary for group chat";
+      }, 2000);
+    }
+  });
+}
+
 render();
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { state, subtotal, computeShares, formatAmount, generateSummary };
+}
