@@ -1,0 +1,8 @@
+{
+  "name": "fair-split-13",
+  "version": "1.0.0",
+  "description": "Split a group bill fairly when people ordered different things",
+  "scripts": {
+    "test": "node --test test/summary.test.mjs"
+  }
+}

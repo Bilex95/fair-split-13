@@ -77,3 +77,22 @@ button:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
 }
 #results .row { display: flex; justify-content: space-between; padding: 6px 0; }
 #results .row strong { color: var(--accent); }
+
+#copy-summary {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  background: #232d38;
+  color: var(--text);
+  border: 1px solid #3b4654;
+  font-weight: 600;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+#copy-summary:hover {
+  background: #2b3744;
+}
+#copy-summary.copied {
+  background: var(--accent);
+  color: #06231a;
+  border-color: var(--accent);
+}
